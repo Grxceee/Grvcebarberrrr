@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Grvce Barber – Coiffeur à Domicile</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ─── RESET & BASE ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #07071a;
+  --v1:       #1a0533;
+  --v2:       #6b21a8;
+  --v3:       #c084fc;
+  --gold:     #f5c842;
+  --white:    #ffffff;
+  --glass-bg: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.15);
+  --radius:   18px;
+  --font-display: 'Playfair Display', serif;
+  --font-body:    'Inter', sans-serif;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  transition: background 0.8s ease;
+}
+body.warm  { background: #120a03; }
+body.light { background: #0d0a20; }
+
+/* ─── NOISE OVERLAY ────────────────────────────────────────── */
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4;
+}
+
+/* ─── FLOATING BUBBLES ─────────────────────────────────────── */
+.bubble {
+  position: fixed; border-radius: 50%; pointer-events:none; z-index:1;
+  background: radial-gradient(circle at 35% 35%, rgba(192,132,252,0.25), rgba(107,33,168,0.08));
+  border: 1px solid rgba(192,132,252,0.18);
+  backdrop-filter: blur(6px);
+  animation: floatBubble linear infinite;
+}
+.bubble:nth-child(1){ width:160px;height:160px; top:8%;  left:-50px;   animation-duration:9s;  animation-delay:0s;   }
+.bubble:nth-child(2){ width:100px;height:100px; top:40%; left:-30px;   animation-duration:12s; animation-delay:-3s;  }
+.bubble:nth-child(3){ width:130px;height:130px; top:70%; right:-40px;  animation-duration:10s; animation-delay:-5s;  }
+.bubble:nth-child(4){ width: 80px;height: 80px; top:20%; right:-20px;  animation-duration:14s; animation-delay:-7s;  }
+@keyframes floatBubble {
+  0%,100%{ transform: translateY(0) scale(1); opacity:.7; }
+  50%    { transform: translateY(-28px) scale(1.05); opacity:1; }
+}
+
+/* ─── NAV ──────────────────────────────────────────────────── */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  display: flex; align-items:center; justify-content:space-between;
+  padding: 18px 40px;
+  background: rgba(7,7,26,0.55);
+  backdrop-filter: blur(20px) saturate(1.6);
+  border-bottom: 1px solid var(--glass-border);
+  transition: padding .4s;
+}
+nav.scrolled { padding: 12px 40px; }
+.nav-logo {
+  font-family: var(--font-display); font-size:1.5rem; font-weight:900;
+  background: linear-gradient(120deg, var(--white), var(--v3));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing:.04em;
+}
+.nav-links { display:flex; gap:32px; list-style:none; }
+.nav-links a {
+  color:rgba(255,255,255,.75); text-decoration:none; font-size:.9rem;
+  font-weight:500; letter-spacing:.05em; position:relative; padding-bottom:3px;
+  transition: color .3s;
+}
+.nav-links a::after {
+  content:''; position:absolute; bottom:0; left:0; width:0; height:1.5px;
+  background: var(--v3); transition: width .35s ease;
+}
+.nav-links a:hover { color:var(--white); }
+.nav-links a:hover::after { width:100%; }
+.nav-cta {
+  background: linear-gradient(135deg, var(--v2), var(--v3));
+  color:var(--white); border:none; border-radius:40px;
+  padding:10px 24px; font-size:.85rem; font-weight:600;
+  cursor:pointer; letter-spacing:.06em;
+  box-shadow: 0 0 20px rgba(192,132,252,.3);
+  transition: transform .2s, box-shadow .2s;
+}
+.nav-cta:hover { transform:scale(1.04); box-shadow: 0 0 32px rgba(192,132,252,.55); }
+.nav-hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; }
+.nav-hamburger span { width:26px;height:2px; background:var(--white); border-radius:2px; transition:.3s; }
+
+/* ─── HERO ─────────────────────────────────────────────────── */
+#home {
+  min-height:100vh; position:relative; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center;
+  padding: 120px 24px 80px;
+  overflow:hidden;
+}
+.hero-glow {
+  position:absolute; inset:0; pointer-events:none;
+  background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(107,33,168,.45) 0%, transparent 70%);
+}
+.hero-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background: var(--glass-bg); border:1px solid var(--glass-border);
+  backdrop-filter:blur(10px); border-radius:40px;
+  padding:6px 18px; font-size:.78rem; font-weight:500; letter-spacing:.1em;
+  color:var(--v3); margin-bottom:28px;
+  animation: fadeDown .8s ease both;
+}
+.hero-badge::before { content:'✦'; font-size:.7rem; }
+.hero-title {
+  font-family: var(--font-display); font-size: clamp(3rem,9vw,6.5rem);
+  font-weight:900; line-height:.95;
+  background: linear-gradient(135deg, #fff 0%, var(--v3) 55%, var(--gold) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin-bottom:20px;
+  animation: fadeUp .9s .1s ease both;
+}
+.hero-sub {
+  font-size: clamp(.95rem,2vw,1.2rem); color:rgba(255,255,255,.65);
+  max-width:480px; line-height:1.7; margin:0 auto 40px;
+  animation: fadeUp .9s .2s ease both;
+}
+.hero-btns { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; animation: fadeUp .9s .3s ease both; }
+.btn-primary {
+  background: linear-gradient(135deg,var(--v2),var(--v3));
+  color:var(--white); border:none; border-radius:50px;
+  padding:14px 32px; font-size:1rem; font-weight:600; cursor:pointer;
+  box-shadow:0 0 30px rgba(192,132,252,.4);
+  transition:transform .2s, box-shadow .2s;
+}
+.btn-primary:hover { transform:translateY(-2px) scale(1.03); box-shadow:0 0 44px rgba(192,132,252,.6); }
+.btn-ghost {
+  background:var(--glass-bg); border:1px solid var(--glass-border);
+  backdrop-filter:blur(10px); color:var(--white); border-radius:50px;
+  padding:14px 32px; font-size:1rem; font-weight:500; cursor:pointer;
+  transition:background .3s, transform .2s;
+}
+.btn-ghost:hover { background:rgba(255,255,255,.12); transform:translateY(-2px); }
+
+/* Clipper 3D CSS */
+.clipper-wrap {
+  position:relative; width:200px; height:200px; margin:50px auto 0;
+  animation: fadeUp .9s .4s ease both;
+  perspective:600px;
+}
+.clipper {
+  width:100%; height:100%;
+  transform-style:preserve-3d;
+  animation: rotateFull 10s linear infinite;
+}
+.clipper svg { width:100%; height:100%; filter:drop-shadow(0 0 28px rgba(192,132,252,.7)); }
+@keyframes rotateFull {
+  0%   { transform: rotateY(0deg) rotateX(8deg); }
+  50%  { transform: rotateY(180deg) rotateX(-8deg); }
+  100% { transform: rotateY(360deg) rotateX(8deg); }
+}
+
+/* ─── SECTION STYLES ───────────────────────────────────────── */
+section { position:relative; z-index:2; padding:80px 24px; }
+.section-eyebrow {
+  text-align:center; color:var(--v3); font-size:.78rem; font-weight:600;
+  letter-spacing:.2em; text-transform:uppercase; margin-bottom:12px;
+}
+.section-title {
+  text-align:center; font-family:var(--font-display);
+  font-size: clamp(1.8rem,4vw,2.8rem); font-weight:700; margin-bottom:48px;
+}
+.section-divider {
+  width:60px; height:2px; margin:16px auto 40px;
+  background: linear-gradient(90deg,var(--v2),var(--v3));
+  border-radius:2px;
+}
+
+/* ─── SCROLL PROGRESS ──────────────────────────────────────── */
+#scroll-bar {
+  position:fixed; top:0; left:0; height:3px; z-index:200;
+  background: linear-gradient(90deg,var(--v2),var(--v3),var(--gold));
+  transition: width .1s linear;
+}
+
+/* ─── GALLERY ──────────────────────────────────────────────── */
+#gallery { background: linear-gradient(180deg,var(--bg) 0%,var(--v1) 100%); }
+.gallery-grid {
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  gap:20px;
+  max-width:1100px; margin:0 auto;
+}
+.gallery-item {
+  position:relative; border-radius:var(--radius); overflow:hidden;
+  cursor:pointer;
+  border:1px solid var(--glass-border);
+  background:var(--glass-bg);
+  backdrop-filter:blur(10px);
+  transition:transform .35s, box-shadow .35s;
+  aspect-ratio:4/5;
+}
+.gallery-item::after {
+  content:''; position:absolute; inset:-2px; border-radius:calc(var(--radius)+2px);
+  border:2px solid transparent;
+  background: linear-gradient(135deg,rgba(192,132,252,.5),rgba(245,200,66,.3)) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite:destination-out; mask-composite:exclude;
+  animation:glowPulse 3s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes glowPulse {
+  0%,100%{opacity:.4;} 50%{opacity:1;}
+}
+.gallery-item img, .gallery-item video {
+  width:100%; height:100%; object-fit:cover;
+  transition:transform .5s ease;
+}
+.gallery-item:hover { transform:translateY(-6px) scale(1.02); box-shadow:0 16px 48px rgba(192,132,252,.25); }
+.gallery-item:hover img, .gallery-item:hover video { transform:scale(1.06); }
+.gallery-caption {
+  position:absolute; bottom:0; left:0; right:0;
+  padding:16px; font-size:.82rem; font-weight:500;
+  background:linear-gradient(0deg,rgba(7,7,26,.9),transparent);
+  transform:translateY(100%); transition:transform .35s;
+}
+.gallery-item:hover .gallery-caption { transform:translateY(0); }
+.play-icon {
+  position:absolute; top:50%;left:50%;transform:translate(-50%,-50%);
+  width:52px;height:52px; border-radius:50%;
+  background:rgba(255,255,255,.18); backdrop-filter:blur(8px);
+  border:2px solid rgba(255,255,255,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem; pointer-events:none;
+}
+
+/* ─── LIGHTBOX ─────────────────────────────────────────────── */
+#lightbox {
+  position:fixed; inset:0; z-index:300; display:none;
+  align-items:center; justify-content:center;
+  background:rgba(7,7,26,.92); backdrop-filter:blur(24px);
+  cursor:pointer;
+}
+#lightbox.open { display:flex; animation:fadeIn .3s ease; }
+#lightbox-inner {
+  max-width:92vw; max-height:90vh;
+  border-radius:var(--radius);
+  overflow:hidden; cursor:default;
+  box-shadow:0 0 80px rgba(192,132,252,.35);
+  border:1px solid var(--glass-border);
+}
+#lightbox-inner img, #lightbox-inner video {
+  max-width:92vw; max-height:90vh; display:block; object-fit:contain;
+}
+#lightbox-close {
+  position:absolute; top:20px;right:24px;
+  font-size:2rem; cursor:pointer; color:rgba(255,255,255,.7);
+  background:none;border:none; transition:color .2s;
+}
+#lightbox-close:hover { color:var(--white); }
+
+/* ─── SERVICES / PRICES ────────────────────────────────────── */
+#services { background: var(--v1); }
+.services-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:20px; max-width:980px; margin:0 auto;
+}
+.service-card {
+  background:var(--glass-bg); border:1px solid var(--glass-border);
+  backdrop-filter:blur(16px); border-radius:var(--radius);
+  padding:28px 24px; text-align:center;
+  cursor:pointer; transition:transform .3s, box-shadow .3s;
+  position:relative; overflow:hidden;
+  text-decoration:none; color:var(--white);
+}
+.service-card::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(192,132,252,.08),transparent);
+  opacity:0; transition:opacity .3s;
+}
+.service-card:hover { transform:translateY(-6px); box-shadow:0 20px 50px rgba(192,132,252,.2); }
+.service-card:hover::before { opacity:1; }
+.service-icon { font-size:2rem; margin-bottom:12px; display:block; }
+.service-name { font-family:var(--font-display); font-size:1.05rem; font-weight:700; margin-bottom:8px; }
+.service-price {
+  font-size:1.6rem; font-weight:800;
+  background:linear-gradient(135deg,var(--v3),var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.service-note { font-size:.75rem; color:rgba(255,255,255,.5); margin-top:6px; }
+.service-arrow { position:absolute; bottom:12px;right:16px; font-size:.8rem; color:var(--v3); opacity:0; transition:opacity .3s; }
+.service-card:hover .service-arrow { opacity:1; }
+
+/* ─── ABOUT STRIP ──────────────────────────────────────────── */
+#about {
+  background:linear-gradient(135deg,var(--bg),var(--v1));
+  display:flex; align-items:center; justify-content:center; text-align:center;
+}
+.about-inner { max-width:640px; }
+.about-inner p { color:rgba(255,255,255,.7); font-size:1.05rem; line-height:1.8; }
+
+/* ─── PAGE BOOKING ─────────────────────────────────────────── */
+#booking {
+  min-height:100vh; padding:120px 24px 80px;
+  background: linear-gradient(180deg,var(--bg) 0%,var(--v1) 50%,var(--bg) 100%);
+}
+.booking-header { text-align:center; margin-bottom:60px; }
+.booking-header p { color:rgba(255,255,255,.65); max-width:480px; margin:0 auto; line-height:1.7; }
+.booking-steps {
+  display:flex; gap:12px; justify-content:center;
+  flex-wrap:wrap; margin-bottom:60px;
+}
+.step { display:flex; align-items:center; gap:8px; color:rgba(255,255,255,.5); font-size:.82rem; }
+.step.active { color:var(--v3); font-weight:600; }
+.step-num {
+  width:26px;height:26px; border-radius:50%;
+  border:1.5px solid currentColor;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem; font-weight:700;
+}
+.step-sep { width:30px;height:1px;background:rgba(255,255,255,.2); }
+
+/* Prices on booking page */
+.booking-prices {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:16px; max-width:980px; margin:0 auto 56px;
+}
+.b-card {
+  background:var(--glass-bg); border:1px solid var(--glass-border);
+  backdrop-filter:blur(16px); border-radius:var(--radius);
+  padding:24px 20px; text-align:center; cursor:pointer;
+  transition:transform .3s, box-shadow .3s, border-color .3s;
+  text-decoration:none; color:var(--white);
+}
+.b-card:hover, .b-card.selected {
+  transform:translateY(-5px); border-color:var(--v3);
+  box-shadow:0 0 30px rgba(192,132,252,.3);
+}
+.b-card-icon { font-size:1.8rem; margin-bottom:10px; }
+.b-card-name { font-weight:600; font-size:.95rem; margin-bottom:6px; }
+.b-card-price { font-size:1.5rem; font-weight:800; color:var(--v3); }
+.b-card-note { font-size:.72rem; color:rgba(255,255,255,.45); margin-top:4px; }
+
+/* Calendar embed */
+/* Calendar embed */
+.calendar-wrap {
+  max-width:900px;
+  margin:0 auto;
+  background:#ffffff;
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:var(--radius);
+  overflow:hidden;
+  padding:12px;
+  box-shadow:0 0 60px rgba(107,33,168,.25);
+}
+
+.calendar-wrap iframe {
+  width:100%;
+  height:620px;
+  border:none;
+  border-radius:calc(var(--radius) - 4px);
+  display:block;
+  background:#ffffff;
+}
+.calendar-cta-note {
+  text-align:center; margin-top:28px;
+  color:rgba(255,255,255,.55); font-size:.85rem;
+}
+.calendar-cta-note a { color:var(--v3); text-decoration:none; }
+.calendar-cta-note a:hover { text-decoration:underline; }
+
+/* ─── FOOTER ───────────────────────────────────────────────── */
+footer {
+  text-align:center; padding:40px 24px;
+  background:rgba(7,7,26,.9);
+  border-top:1px solid var(--glass-border);
+  color:rgba(255,255,255,.4); font-size:.82rem;
+}
+footer strong { color:var(--v3); }
+
+/* ─── ANIMATIONS ───────────────────────────────────────────── */
+@keyframes fadeUp   { from{opacity:0;transform:translateY(28px)}  to{opacity:1;transform:none} }
+@keyframes fadeDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:none} }
+@keyframes fadeIn   { from{opacity:0} to{opacity:1} }
+
+.reveal {
+  opacity:0; transform:translateY(36px);
+  transition:opacity .7s ease, transform .7s ease;
+}
+.reveal.visible { opacity:1; transform:none; }
+
+/* ─── RESPONSIVE ───────────────────────────────────────────── */
+@media(max-width:768px){
+  nav { padding:14px 20px; }
+  nav.scrolled { padding:10px 20px; }
+  .nav-links, .nav-cta { display:none; }
+  .nav-hamburger { display:flex; }
+  .nav-links.open {
+    display:flex; flex-direction:column; gap:0;
+    position:fixed; inset:0; top:64px;
+    background:rgba(7,7,26,.97); backdrop-filter:blur(20px);
+    padding:32px 24px; align-items:center; justify-content:flex-start;
+  }
+  .nav-links.open a { font-size:1.4rem; padding:18px 0; border-bottom:1px solid var(--glass-border); width:100%; text-align:center; }
+  .nav-links.open ~ .nav-cta { display:flex; margin:24px auto 0; }
+  .hero-title { font-size: clamp(2.6rem,11vw,4rem); }
+  .gallery-grid { grid-template-columns:1fr 1fr; gap:12px; }
+  .services-grid { grid-template-columns:1fr 1fr; }
+  .booking-prices { grid-template-columns:1fr 1fr; }
+  .clipper-wrap { width:130px;height:130px; }
+  .calendar-wrap iframe { height:520px; }
+  .bubble:nth-child(1){ width:100px;height:100px; }
+  .bubble:nth-child(2){ width: 70px;height: 70px; }
+  .bubble:nth-child(3){ width: 90px;height: 90px; }
+  .bubble:nth-child(4){ width: 55px;height: 55px; }
+}
+@media(max-width:480px){
+  .gallery-grid { grid-template-columns:1fr; }
+  .services-grid { grid-template-columns:1fr; }
+  .booking-prices { grid-template-columns:1fr 1fr; }
+  .hero-btns { flex-direction:column; align-items:center; }
+  .btn-primary, .btn-ghost { width:100%; max-width:280px; text-align:center; }
+  .calendar-wrap iframe { height:450px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll progress -->
+<div id="scroll-bar" style="width:0%"></div>
+
+<!-- Floating Bubbles -->
+<div class="bubble"></div>
+<div class="bubble"></div>
+<div class="bubble"></div>
+<div class="bubble"></div>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button id="lightbox-close">✕</button>
+  <div id="lightbox-inner"></div>
+</div>
+
+<!-- ═══ NAV ═══ -->
+<nav id="main-nav">
+  <span class="nav-logo">Grvce Barber</span>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#home">Accueil</a></li>
+    <li><a href="#gallery">Réalisations</a></li>
+    <li><a href="#services">Tarifs</a></li>
+    <li><a href="#booking">Réserver</a></li>
+  </ul>
+  <button class="nav-cta" onclick="scrollToBooking()">Réserver un créneau</button>
+  <div class="nav-hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- ═══ HOME PAGE ═══ -->
+<div id="page-home">
+
+  <!-- HERO -->
+  <section id="home">
+    <div class="hero-glow"></div>
+    <div class="hero-badge">✦ Coiffeur à domicile dans le 91 & alentours</div>
+    <h1 class="hero-title">Grvce<br/>Barber</h1>
+    <p class="hero-sub">Un look propre.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="scrollToBooking()">Réserver un créneau</button>
+      <button class="btn-ghost" onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})">Voir les réalisations</button>
+    </div>
+    <!-- Animated Clipper -->
+    <div class="clipper-wrap">
+      <div class="clipper">
+        <svg viewBox="0 0 120 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#c084fc"/>
+              <stop offset="100%" stop-color="#f5c842"/>
+            </linearGradient>
+            <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(192,132,252,.4)"/>
+              <stop offset="100%" stop-color="rgba(107,33,168,.1)"/>
+            </linearGradient>
+          </defs>
+          <!-- Body -->
+          <rect x="30" y="20" width="60" height="100" rx="18" fill="url(#cg2)" stroke="url(#cg1)" stroke-width="2"/>
+          <!-- Head / blade zone -->
+          <rect x="34" y="108" width="52" height="22" rx="8" fill="url(#cg1)" opacity=".85"/>
+          <!-- Blade teeth -->
+          <rect x="38" y="126" width="5" height="10" rx="2" fill="#fff" opacity=".8"/>
+          <rect x="46" y="126" width="5" height="10" rx="2" fill="#fff" opacity=".8"/>
+          <rect x="54" y="126" width="5" height="10" rx="2" fill="#fff" opacity=".8"/>
+          <rect x="62" y="126" width="5" height="10" rx="2" fill="#fff" opacity=".8"/>
+          <rect x="70" y="126" width="5" height="10" rx="2" fill="#fff" opacity=".8"/>
+          <!-- Button -->
+          <circle cx="60" cy="58" r="12" fill="url(#cg1)" opacity=".6"/>
+          <circle cx="60" cy="58" r="6"  fill="#fff" opacity=".5"/>
+          <!-- Top detail -->
+          <rect x="50" y="26" width="20" height="6" rx="3" fill="url(#cg1)" opacity=".5"/>
+          <!-- Side grooves -->
+          <rect x="30" y="70" width="8" height="2" rx="1" fill="url(#cg1)" opacity=".4"/>
+          <rect x="82" y="70" width="8" height="2" rx="1" fill="url(#cg1)" opacity=".4"/>
+          <rect x="30" y="78" width="8" height="2" rx="1" fill="url(#cg1)" opacity=".3"/>
+          <rect x="82" y="78" width="8" height="2" rx="1" fill="url(#cg1)" opacity=".3"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section id="gallery">
+    <h2 class="section-title reveal">Mes Réalisations</h2>
+    <div class="section-divider reveal"></div>
+    <div class="gallery-grid">
+      <!-- Cards with placeholder gradient images (replace src with real ones) -->
+      <div class="gallery-item reveal" onclick="openLightbox(this)" data-type="image">
+        <img src="Thomas.jpg" alt="Coupe classique" loading="lazy"/>
+        <div class="gallery-caption">Coupe simple ✂️</div>
+      </div>
+      <div class="gallery-item reveal" onclick="openLightbox(this)" data-type="image">
+        <img src="coupe simple/nat.PNG" alt="Coupe + Barbe" loading="lazy"/>
+        <div class="gallery-caption">Taper mid 🪒</div>
+      </div>
+      <div class="gallery-item reveal" onclick="openLightbox(this)" data-type="image">
+        <img src="coupe simple/vassou.jpg" alt="Contours précis" loading="lazy"/>
+        <div class="gallery-caption">Contours précis ✨</div>
+      </div>
+      <div class="gallery-item reveal" onclick="openLightbox(this)" data-type="image">
+        <img src="coupe simple/T2.PNG" alt="Barbe taillée" loading="lazy"/>
+        <div class="gallery-caption">dégradé 🪒</div>
+      </div>
+      <div class="gallery-item reveal" onclick="openLightbox(this)" data-type="image">
+        <img src="coupe simple/niwa.PNG" alt="Look soigné" loading="lazy"/>
+        <div class="gallery-caption">Taper mid 💈</div>
+      </div>
+      <div class="gallery-item reveal" onclick="openLightbox(this)" data-type="image">
+        <img src="coupe simple/isma.PNG" alt="Déplacement à domicile" loading="lazy"/>
+        <div class="gallery-caption">Taper mid 🏠</div>
+      </div>
+    </div>
+    <p style="text-align:center;margin-top:32px;font-size:.82rem;color:rgba(255,255,255,.4);">Cliquez sur une photo pour l'agrandir</p>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <p class="section-eyebrow reveal">Tarifs</p>
+    <h2 class="section-title reveal">Nos Prestations</h2>
+    <div class="section-divider reveal"></div>
+    <div class="services-grid">
+      <a class="service-card reveal" href="#booking" onclick="selectService('Coupe simple – 10€')">
+        <span class="service-icon">✂️</span>
+        <div class="service-name">Coupe Simple</div>
+        <div class="service-price">10€</div>
+        <div class="service-note">Coupe classique ou moderne</div>
+        <span class="service-arrow">→ Réserver</span>
+      </a>
+      <a class="service-card reveal" href="#booking" onclick="selectService('Coupe + Barbe – 15€')">
+        <span class="service-icon">✂️🪒</span>
+        <div class="service-name">Coupe + Barbe</div>
+        <div class="service-price">15€</div>
+        <div class="service-note">Combo look complet</div>
+        <span class="service-arrow">→ Réserver</span>
+      </a>
+      <a class="service-card reveal" href="#booking" onclick="selectService('Contours – 5€')">
+        <span class="service-icon">💈</span>
+        <div class="service-name">Contours</div>
+        <div class="service-price">5€</div>
+        <div class="service-note">Finition précise des bords</div>
+        <span class="service-arrow">→ Réserver</span>
+      </a>
+      <a class="service-card reveal" href="#booking" onclick="selectService('Barbe seule – 5€')">
+        <span class="service-icon">🪒</span>
+        <div class="service-name">Barbe</div>
+        <div class="service-price">5€</div>
+        <div class="service-note">Taille & mise en forme</div>
+        <span class="service-arrow">→ Réserver</span>
+      </a>
+      <a class="service-card reveal" href="#booking" onclick="selectService('Déplacement à domicile (+5€ selon distance)')">
+        <span class="service-icon">🏠</span>
+        <div class="service-name">À Domicile</div>
+        <div class="service-price">+5€</div>
+        <div class="service-note">Selon la distance</div>
+        <span class="service-arrow">→ Réserver</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="about-inner reveal">
+      <p class="section-eyebrow">À propos</p>
+      <h2 class="section-title">Grvce Barber</h2>
+      <div class="section-divider"></div>
+      <p>Reservez votre céneau en 1 minutes juste en bas.</p>
+      <br/>
+      <button class="btn-primary" onclick="scrollToBooking()" style="margin-top:12px;">Prendre rendez-vous</button>
+    </div>
+  </section>
+
+</div><!-- /page-home -->
+
+<!-- ═══ BOOKING PAGE ═══ -->
+<section id="booking">
+  <div class="booking-header">
+    <p class="section-eyebrow">Réservation</p>
+    <h2 class="section-title">Réserver un créneau</h2>
+    <div class="section-divider"></div>
+    <p>Choisissez votre prestation ci-dessous, puis sélectionnez un créneau disponible dans le calendrier. La réservation se fait directement via Google Agenda.</p>
+  </div>
+
+  <div class="booking-steps">
+    <div class="step active"><span class="step-num">1</span> Choisir la prestation</div>
+    <div class="step-sep"></div>
+    <div class="step active"><span class="step-num">2</span> Sélectionner un créneau</div>
+    <div class="step-sep"></div>
+    <div class="step"><span class="step-num">3</span> Confirmer</div>
+  </div>
+
+  <!-- Pricing cards on booking page -->
+  <div class="booking-prices" id="booking-prices">
+    <div class="b-card reveal" onclick="bookService('Coupe simple – 10€', this)">
+      <div class="b-card-icon">✂️</div>
+      <div class="b-card-name">Coupe Simple</div>
+      <div class="b-card-price">10€</div>
+    </div>
+    <div class="b-card reveal" onclick="bookService('Coupe + Barbe – 15€', this)">
+      <div class="b-card-icon">✂️🪒</div>
+      <div class="b-card-name">Coupe + Barbe</div>
+      <div class="b-card-price">15€</div>
+    </div>
+    <div class="b-card reveal" onclick="bookService('Contours – 5€', this)">
+      <div class="b-card-icon">💈</div>
+      <div class="b-card-name">Contours</div>
+      <div class="b-card-price">5€</div>
+    </div>
+    <div class="b-card reveal" onclick="bookService('Barbe – 5€', this)">
+      <div class="b-card-icon">🪒</div>
+      <div class="b-card-name">Barbe</div>
+      <div class="b-card-price">5€</div>
+    </div>
+    <div class="b-card reveal" onclick="bookService('Déplacement à domicile (+5€)', this)">
+      <div class="b-card-icon">🏠</div>
+      <div class="b-card-name">+ Domicile</div>
+      <div class="b-card-price">+5€</div>
+      <div class="b-card-note">selon distance</div>
+    </div>
+  </div>
+
+  <!-- Notification strip -->
+  <div id="service-notif" style="
+    max-width:900px;margin:0 auto 28px;padding:14px 20px;
+    background:rgba(192,132,252,.12);border:1px solid rgba(192,132,252,.35);
+    border-radius:12px;display:none;text-align:center;font-size:.9rem;
+    color:var(--v3);font-weight:500;
+  ">
+    Prestation sélectionnée : <span id="notif-service-name"></span> · Sélectionnez un créneau ↓
+  </div>
+
+  <!-- Google Calendar embed -->
+  <div class="calendar-wrap reveal" id="calendar-area">
+    <iframe
+      id="gcal-iframe"
+      src="https://calendar.app.google/VTrhtnt6CkhPHKQc7"
+      title="Réserver un créneau – Grvce Barber"
+      allowfullscreen
+      loading="lazy"
+    ></iframe>
+  </div>
+
+  <p class="calendar-cta-note">
+    Vous pouvez aussi réserver directement via ce lien :
+    <a href="https://calendar.app.google/VTrhtnt6CkhPHKQc7" target="_blank" rel="noopener">Ouvrir Google Agenda ↗</a>
+  </p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 <strong>Grvce Barber</strong> · Coiffeur à domicile · Paris &amp; alentours</p>
+  <p style="margin-top:8px;">Contact &amp; réservations via Google Agenda ✂️</p>
+</footer>
+
+<!-- ═══ JAVASCRIPT ═══ -->
+<script>
+/* ── Scroll progress bar ── */
+window.addEventListener('scroll',()=>{
+  const s = document.documentElement, b = document.body;
+  const scrollTop = s.scrollTop || b.scrollTop;
+  const scrollHeight = (s.scrollHeight || b.scrollHeight) - s.clientHeight;
+  document.getElementById('scroll-bar').style.width = (scrollTop/scrollHeight*100)+'%';
+});
+
+/* ── Sticky nav shrink ── */
+window.addEventListener('scroll',()=>{
+  document.getElementById('main-nav').classList.toggle('scrolled', scrollY > 60);
+});
+
+/* ── Background color shift on scroll ── */
+const colorZones = [
+  {start:0,     end:0.2,  cls:''},
+  {start:0.2,   end:0.55, cls:'warm'},
+  {start:0.55,  end:1,    cls:''},
+];
+window.addEventListener('scroll', ()=>{
+  const ratio = scrollY / (document.body.scrollHeight - innerHeight);
+  let active = '';
+  for(const z of colorZones){ if(ratio >= z.start && ratio < z.end){ active = z.cls; break; } }
+  document.body.className = active;
+  // keep bubbles
+});
+
+/* ── Reveal on scroll ── */
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); }
+  });
+},{threshold:0.12});
+reveals.forEach(r => observer.observe(r));
+
+/* ── Mobile menu ── */
+function toggleMenu(){
+  document.getElementById('nav-links').classList.toggle('open');
+}
+// Close on link click
+document.querySelectorAll('#nav-links a').forEach(a=>{
+  a.addEventListener('click',()=>document.getElementById('nav-links').classList.remove('open'));
+});
+
+/* ── Scroll to booking ── */
+function scrollToBooking(){
+  document.getElementById('booking').scrollIntoView({behavior:'smooth'});
+}
+
+/* ── Service selection from home tarifs ── */
+function selectService(name){
+  // Just scroll to booking; booking page cards handle the real selection
+  setTimeout(()=>{
+    const booking = document.getElementById('booking');
+    booking.scrollIntoView({behavior:'smooth'});
+  },100);
+}
+
+/* ── Service selection on booking page ── */
+let selectedService = null;
+function bookService(name, el){
+  selectedService = name;
+  // Highlight selected
+  document.querySelectorAll('.b-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  // Show notification
+  document.getElementById('notif-service-name').textContent = name;
+  document.getElementById('service-notif').style.display = 'block';
+  // Scroll to calendar
+  setTimeout(()=>{
+    document.getElementById('calendar-area').scrollIntoView({behavior:'smooth', block:'start'});
+    // Open Google Calendar link with pre-filled title if possible
+    const calUrl = 'https://calendar.app.google/VTrhtnt6CkhPHKQc7';
+    // Update iframe (the Google Appointment Scheduling link)
+    document.getElementById('gcal-iframe').src = calUrl + '?service=' + encodeURIComponent(name);
+  }, 400);
+}
+
+/* ── Lightbox ── */
+function openLightbox(el){
+  const type = el.dataset.type;
+  const inner = document.getElementById('lightbox-inner');
+  inner.innerHTML = '';
+  if(type === 'image'){
+    const img = el.querySelector('img');
+    const clone = document.createElement('img');
+    clone.src = img.src; clone.alt = img.alt;
+    inner.appendChild(clone);
+  } else {
+    const vid = el.querySelector('video');
+    const clone = vid.cloneNode(true);
+    clone.controls = true; clone.autoplay = true;
+    inner.appendChild(clone);
+  }
+  const lb = document.getElementById('lightbox');
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+document.getElementById('lightbox').addEventListener('click', e=>{
+  if(e.target === e.currentTarget){ closeLightbox(); }
+});
+document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+function closeLightbox(){
+  const lb = document.getElementById('lightbox');
+  lb.classList.remove('open');
+  document.body.style.overflow = '';
+  document.getElementById('lightbox-inner').innerHTML = '';
+}
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeLightbox(); });
+
+/* ── Bubble parallax on mouse move (desktop) ── */
+document.addEventListener('mousemove', e=>{
+  const x = (e.clientX / innerWidth  - 0.5) * 18;
+  const y = (e.clientY / innerHeight - 0.5) * 18;
+  document.querySelectorAll('.bubble').forEach((b,i)=>{
+    const f = (i+1) * 0.6;
+    b.style.transform = `translate(${x*f}px,${y*f}px)`;
+  });
+});
+
+/* ── Touch swipe color hint for mobile ── */
+let touchY = 0;
+document.addEventListener('touchstart', e=>{ touchY = e.touches[0].clientY; });
+document.addEventListener('touchend', e=>{
+  const diff = touchY - e.changedTouches[0].clientY;
+  // handled by scroll listener above
+});
+</script>
+</body>
+</html>
